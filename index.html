@@ -438,6 +438,64 @@ header.site-header{
 .form-msg.success{background:rgba(51,163,121,.15); color:var(--forest-2);}
 .form-msg.error{background:rgba(229,105,91,.15); color:var(--danger);}
 
+/* ---------- Order tracking ---------- */
+.track-panel{padding:32px;}
+.track-panel h3{font-size:20px; font-weight:800; margin-bottom:8px;}
+.track-sub{font-size:13.5px; color:var(--text-muted); margin-bottom:20px; line-height:1.7;}
+.track-search-row{display:flex; gap:10px; margin-bottom:24px;}
+.track-search-row input{
+  flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 14px;
+  font-family:inherit; font-size:14.5px; background:var(--surface-2); color:var(--text); transition:border-color .2s;
+}
+.track-search-row input:focus{outline:none; border-color:var(--gold);}
+.btn-track-search{background:var(--gold); color:#1A1005; padding:0 22px; border-radius:11px; font-weight:800; font-size:14px; transition:background .15s;}
+.btn-track-search:hover{background:var(--gold-bright);}
+.btn-track-search:disabled{opacity:.6; cursor:not-allowed;}
+
+.track-results-list{display:flex; flex-direction:column; gap:16px; max-height:52vh; overflow-y:auto; padding-left:4px;}
+.track-empty{text-align:center; color:var(--text-muted); font-size:14px; padding:30px 10px;}
+.order-track-card{background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:18px;}
+.order-track-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+.order-track-head strong{font-size:14px;}
+.order-track-date{font-size:12px; color:var(--text-muted);}
+.order-track-total{font-size:13.5px; font-weight:700; color:var(--gold-bright);}
+
+.order-cancelled-banner{
+  background:rgba(229,105,91,.14); color:var(--danger); font-size:13px; font-weight:700;
+  padding:10px 14px; border-radius:9px; text-align:center;
+}
+
+.stepper{display:flex; align-items:flex-start; margin:6px 0 4px;}
+.stepper .step{flex:1; text-align:center; position:relative;}
+.stepper .step .dot{
+  width:26px; height:26px; border-radius:50%; background:var(--surface-3); border:2px solid var(--surface-3);
+  display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:12px; font-weight:800; color:var(--text-muted);
+  transition:background .2s, border-color .2s, color .2s;
+}
+.stepper .step.done .dot{background:var(--forest); border-color:var(--forest); color:#052018;}
+.stepper .step.current .dot{background:var(--gold); border-color:var(--gold); color:#1A1005; box-shadow:0 0 0 4px rgba(217,164,65,.2);}
+.stepper .step .line{
+  position:absolute; top:13px; right:50%; width:100%; height:2px; background:var(--surface-3); z-index:0;
+}
+.stepper .step:first-child .line{display:none;}
+.stepper .step.done .line, .stepper .step.current .line{background:var(--forest);}
+.stepper .step .label{font-size:11px; color:var(--text-muted); position:relative; z-index:1;}
+.stepper .step.done .label, .stepper .step.current .label{color:var(--text); font-weight:600;}
+
+.order-items-summary{margin-top:14px; padding-top:12px; border-top:1px solid var(--line); font-size:12.5px; color:var(--text-muted);}
+.order-items-summary div{padding:2px 0;}
+
+.track-success-cta{
+  margin-top:14px; display:inline-flex; align-items:center; gap:6px; background:var(--surface-2);
+  border:1px solid var(--gold); color:var(--gold-bright); padding:9px 16px; border-radius:999px;
+  font-size:13px; font-weight:700; transition:background .15s;
+}
+.track-success-cta:hover{background:var(--surface-3);}
+
+@media(max-width:760px){
+  .stepper .step .label{font-size:9.5px;}
+}
+
 /* ---------- Toast ---------- */
 .toast{
   position:fixed; bottom:28px; right:50%; transform:translateX(50%) translateY(8px);
@@ -499,6 +557,9 @@ footer.site-footer{background:var(--bg-2); color:var(--text-muted); margin-top:6
     </div>
 
     <div class="header-actions">
+      <button class="icon-btn" id="open-track-btn" aria-label="تتبع الطلب" title="تتبع الطلب">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="13" height="10" rx="1.5"/><path d="M16 10h3.2c.5 0 .9.3 1.1.7l1.2 2.6c.06.13.1.28.1.42V17a1 1 0 0 1-1 1h-1"/><circle cx="7.5" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/></svg>
+      </button>
       <button class="icon-btn" id="open-wishlist-btn" aria-label="المفضلة">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6c-1.7-1.5-4.4-1.5-6 .2L12 7.6l-2.8-2.8c-1.6-1.7-4.3-1.7-6 0-1.7 1.7-1.7 4.4 0 6.2L12 20l8.8-8.9c1.7-1.8 1.7-4.6 0-6.3z"/></svg>
         <span class="cart-count" id="wishlist-count">0</span>
@@ -607,6 +668,22 @@ footer.site-footer{background:var(--bg-2); color:var(--text-muted); margin-top:6
     <button class="modal-close" id="close-wishlist-btn" style="position:static;">✕</button>
   </div>
   <div class="cart-items" id="wishlist-items-list"></div>
+</div>
+
+<!-- ============ Track Order Modal ============ -->
+<div class="modal-overlay" id="track-modal">
+  <div class="modal-box" style="max-width:560px;">
+    <button class="modal-close" id="close-track-modal">✕</button>
+    <div class="track-panel">
+      <h3>تتبع حالة طلبك</h3>
+      <p class="track-sub">أدخل رقم الهاتف المستخدم عند الطلب لعرض كل طلباتك وحالتها الحالية</p>
+      <form id="track-form" class="track-search-row">
+        <input type="tel" id="track-phone" placeholder="رقم الهاتف" required>
+        <button type="submit" class="btn-track-search" id="track-search-btn">بحث</button>
+      </form>
+      <div id="track-results"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ============ Checkout Modal ============ -->
@@ -1237,6 +1314,71 @@ function closeWishlistDrawer() {
   $("#drawer-backdrop").classList.remove("open");
 }
 
+/* ---------------- Order tracking ---------------- */
+const ORDER_STEPS = ["جديد", "قيد التجهيز", "تم الشحن", "تم التسليم"];
+
+function renderOrderStepper(status) {
+  if (status === "ملغي") {
+    return `<div class="order-cancelled-banner">تم إلغاء هذا الطلب</div>`;
+  }
+  const currentIndex = ORDER_STEPS.indexOf(status);
+  return `
+    <div class="stepper">
+      ${ORDER_STEPS.map((label, i) => {
+        let cls = "";
+        if (i < currentIndex) cls = "done";
+        else if (i === currentIndex) cls = "current";
+        return `<div class="step ${cls}"><div class="line"></div><div class="dot">${i + 1}</div><div class="label">${label}</div></div>`;
+      }).join("")}
+    </div>`;
+}
+
+async function trackOrdersByPhone(phone) {
+  const resultsBox = $("#track-results");
+  resultsBox.innerHTML = `<div class="track-empty">جاري البحث...</div>`;
+  try {
+    const q = query(collection(db, "orders"), where("phone", "==", phone));
+    const snap = await getDocs(q);
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    renderTrackResults(orders);
+    localStorage.setItem("store_last_phone", phone);
+  } catch (e) {
+    console.error("خطأ في البحث عن الطلبات:", e);
+    resultsBox.innerHTML = `<div class="track-empty">حدث خطأ أثناء البحث، حاول مرة أخرى</div>`;
+  }
+}
+
+function renderTrackResults(orders) {
+  const resultsBox = $("#track-results");
+  if (!orders.length) {
+    resultsBox.innerHTML = `<div class="track-empty">لم يتم العثور على أي طلبات بهذا الرقم</div>`;
+    return;
+  }
+  resultsBox.innerHTML = `<div class="track-results-list">` + orders.map(o => {
+    const date = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString("ar-EG") : "-";
+    const itemsLine = (o.items || []).map(i => `<div>${i.name} × ${i.qty}</div>`).join("");
+    return `
+      <div class="order-track-card">
+        <div class="order-track-head">
+          <strong>طلب #${o.id.slice(0, 6)}</strong>
+          <span class="order-track-date">${date}</span>
+          <span class="order-track-total">${money(o.total)}</span>
+        </div>
+        ${renderOrderStepper(o.status)}
+        <div class="order-items-summary">${itemsLine}</div>
+      </div>`;
+  }).join("") + `</div>`;
+}
+
+function openTrackModal(prefillPhone) {
+  const savedPhone = prefillPhone || localStorage.getItem("store_last_phone") || "";
+  $("#track-phone").value = savedPhone;
+  $("#track-results").innerHTML = "";
+  if (savedPhone) trackOrdersByPhone(savedPhone);
+  openModal("#track-modal");
+}
+
 /* ---------------- Checkout ---------------- */
 function openCheckout() {
   if (!cart.length) { showToast("السلة فارغة"); return; }
@@ -1248,6 +1390,7 @@ function openCheckout() {
     return `<div class="row"><span>${p.name} × ${item.qty}</span><span>${money(p.price * item.qty)}</span></div>`;
   }).join("") + `<div class="row" style="font-weight:800; border-top:1px solid var(--line); margin-top:6px; padding-top:8px;"><span>الإجمالي</span><span>${money(total)}</span></div>`;
   $("#checkout-msg").innerHTML = "";
+  $("#submit-order-btn").style.display = "";
   closeModal("#detail-modal");
   closeDrawer();
   openModal("#checkout-modal");
@@ -1286,13 +1429,14 @@ async function submitOrder(e) {
       updateDoc(doc(db, "products", item.productId), { soldCount: increment(item.qty) }).catch(() => {})
     ));
 
-    $("#checkout-msg").innerHTML = `<div class="form-msg success">تم إرسال طلبك بنجاح! سنتواصل معك قريبًا.</div>`;
+    $("#checkout-msg").innerHTML = `
+      <div class="form-msg success">تم إرسال طلبك بنجاح! سنتواصل معك قريبًا.</div>
+      <button type="button" class="track-success-cta" id="goto-track-btn">تتبع حالة طلبك الآن</button>`;
+    $("#goto-track-btn").onclick = () => { closeModal("#checkout-modal"); openTrackModal(phone); };
     cart = [];
     saveCart();
-    setTimeout(() => {
-      closeModal("#checkout-modal");
-      $("#checkout-form").reset();
-    }, 1800);
+    $("#checkout-form").reset();
+    $("#submit-order-btn").style.display = "none";
   } catch (err) {
     console.error("خطأ في إرسال الطلب:", err);
     $("#checkout-msg").innerHTML = `<div class="form-msg error">حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى.</div>`;
@@ -1355,6 +1499,18 @@ function bindEvents() {
   $("#close-cart-btn").addEventListener("click", closeDrawer);
   $("#open-wishlist-btn").addEventListener("click", openWishlistDrawer);
   $("#close-wishlist-btn").addEventListener("click", closeWishlistDrawer);
+  $("#open-track-btn").addEventListener("click", () => openTrackModal());
+  $("#close-track-modal").addEventListener("click", () => closeModal("#track-modal"));
+  $("#track-modal").addEventListener("click", (e) => { if (e.target.id === "track-modal") closeModal("#track-modal"); });
+  $("#track-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const phone = $("#track-phone").value.trim();
+    if (!phone) return;
+    const btn = $("#track-search-btn");
+    btn.disabled = true;
+    await trackOrdersByPhone(phone);
+    btn.disabled = false;
+  });
   $("#drawer-backdrop").addEventListener("click", () => { closeDrawer(); closeWishlistDrawer(); });
   $("#sort-select").addEventListener("change", (e) => { currentSort = e.target.value; renderProducts(); });
   $("#close-detail-modal").addEventListener("click", () => closeModal("#detail-modal"));
