@@ -837,23 +837,66 @@ header.site-header.is-scrolled{box-shadow:0 10px 26px rgba(0,0,0,.22);}
 }
 .toast.show{opacity:1; transform:translateX(50%) translateY(0);}
 
-/* ---------- Footer ---------- */
-footer.site-footer{background:var(--bg-2); color:var(--text-muted); margin-top:64px; padding:52px 0 0; border-top:1px solid var(--line);}
-.footer-grid{display:grid; grid-template-columns:2fr 1fr 1fr; gap:38px; padding-bottom:38px;}
-.footer-grid h4{color:var(--text); font-size:16px; margin-bottom:16px; font-weight:800;}
-.footer-grid p, .footer-grid a{font-size:13.5px; color:var(--text-muted); display:block; margin-bottom:9px; transition:color .15s;}
-.footer-grid a:hover{color:var(--gold-bright);}
-.social-row{display:flex; gap:10px; margin-top:12px;}
-.social-row a{
-  width:36px; height:36px; border-radius:50%; background:var(--surface); border:1px solid var(--line);
-  display:flex; align-items:center; justify-content:center; margin-bottom:0; font-size:13px;
-  transition:background .15s, transform .15s, border-color .15s;
+/* ---------- Footer (تصميم محدّث) ---------- */
+footer.site-footer{
+  position:relative; background:var(--bg-2); color:var(--text-muted); margin-top:64px; padding:56px 0 0;
+  border-top:1px solid var(--line); overflow:hidden;
 }
-.social-row a:hover{background:var(--surface-2); border-color:var(--gold); transform:translateY(-2px);}
-.footer-bottom{border-top:1px solid var(--line); text-align:center; padding:18px 0; font-size:12.5px; color:#5f7368;}
+footer.site-footer::before{
+  content:''; position:absolute; top:0; right:0; left:0; height:2px; background:var(--gold-grad);
+}
+.footer-grid{display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:40px; padding-bottom:34px;}
+.footer-brand-name{color:var(--gold-bright); font-size:19px; margin-bottom:18px; font-weight:800;}
+.footer-grid h4:not(.footer-brand-name){
+  color:var(--text); font-size:14.5px; margin-bottom:18px; font-weight:800;
+  position:relative; padding-right:14px;
+}
+.footer-grid h4:not(.footer-brand-name)::before{
+  content:''; position:absolute; right:0; top:2px; bottom:2px; width:3px; background:var(--gold); border-radius:2px;
+}
+.footer-info-row{display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--text-muted); margin-bottom:12px;}
+.footer-info-row svg{width:15px; height:15px; color:var(--gold); flex-shrink:0;}
+.footer-grid a{font-size:13.5px; color:var(--text-muted); display:block; margin-bottom:11px; transition:color .15s;}
+.footer-grid a:hover{color:var(--gold-bright);}
+.social-row{display:flex; gap:10px; margin-top:16px;}
+.social-row a{
+  width:38px; height:38px; border-radius:50%; background:var(--surface); border:1px solid var(--line); color:var(--text-muted);
+  display:flex; align-items:center; justify-content:center; margin-bottom:0;
+  transition:background .2s, transform .2s, border-color .2s, box-shadow .2s, color .2s;
+}
+.social-row a svg{width:16px; height:16px;}
+.social-row a:hover{background:var(--surface-2); border-color:var(--gold); color:var(--gold-bright); transform:translateY(-3px); box-shadow:var(--glow-gold);}
+.footer-bottom{border-top:1px solid var(--line); text-align:center; padding:20px 0; font-size:12.5px; color:var(--text-muted);}
 
 @media(max-width:900px){
   .footer-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .footer-grid{grid-template-columns:1fr;}
+  .footer-brand-name{font-size:17px;}
+}
+
+/* ---------- Page Loader (شاشة تحميل احترافية) ---------- */
+.page-loader{
+  position:fixed; inset:0; z-index:9999;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(217,164,65,.10), transparent 42%),
+    radial-gradient(circle at 85% 85%, rgba(51,163,121,.08), transparent 40%),
+    var(--bg);
+  transition:opacity .5s ease, visibility .5s ease;
+}
+.page-loader.hide{opacity:0; visibility:hidden; pointer-events:none;}
+.loader-spinner{
+  width:52px; height:52px; border-radius:50%;
+  border:3px solid var(--surface-2); border-top-color:var(--gold);
+  animation:loader-spin .8s linear infinite;
+}
+@keyframes loader-spin{ to{transform:rotate(360deg);} }
+.loader-text{color:var(--text-muted); font-size:13.5px; font-weight:600; letter-spacing:.02em;}
+@media (prefers-reduced-motion: reduce){
+  .loader-spinner{animation:none;}
+  .page-loader{transition:none;}
 }
 @media(max-width:640px){
   .header-inner{flex-wrap:wrap; height:auto; padding:14px 0; gap:12px;}
