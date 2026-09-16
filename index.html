@@ -36,6 +36,12 @@
 </head>
 <body>
 
+<!-- ============ Page Loader ============ -->
+<div class="page-loader" id="page-loader">
+  <div class="loader-spinner"></div>
+  <p class="loader-text">جاري تحميل المتجر...</p>
+</div>
+
 <!-- ============ Top bar ============ -->
 <div class="topbar">
   <div class="container">
@@ -207,12 +213,12 @@
     <div class="orders-page-head">
       <a href="#" id="back-to-store-link" class="back-link" data-i18n="back_to_store">→ رجوع للمتجر</a>
       <h2 data-i18n="my_orders">طلباتي</h2>
-      <p data-i18n="my_orders_sub">أدخل رقم الهاتف المستخدم عند الطلب لمتابعة حالة كل طلباتك</p>
+      <p data-i18n="my_orders_sub">سجّل دخول لمتابعة حالة كل طلباتك</p>
     </div>
     <p class="orders-login-hint" id="orders-login-hint">
-      <a href="#" id="orders-page-login-link">سجّل دخول</a> عشان تتابع طلباتك تلقائيًا من غير ما تكتب رقم هاتفك في كل مرة
+      <a href="#" id="orders-page-login-link">سجّل دخول</a> عشان تقدر تشوف طلباتك
     </p>
-    <form id="orders-search-form" class="track-search-row">
+    <form id="orders-search-form" class="track-search-row" style="display:none;">
       <input type="tel" id="orders-phone-input" placeholder="رقم الهاتف" data-i18n-placeholder="phone_number" required>
       <button type="submit" class="btn-track-search" id="orders-search-btn" data-i18n="search">بحث</button>
     </form>
@@ -225,10 +231,10 @@
 <footer class="site-footer">
   <div class="container footer-grid">
     <div>
-      <h4 id="footer-store-name">المتجر</h4>
-      <p id="footer-address"></p>
-      <p id="footer-phone"></p>
-      <p id="footer-email"></p>
+      <h4 id="footer-store-name" class="footer-brand-name">المتجر</h4>
+      <p id="footer-address" class="footer-info-row"></p>
+      <p id="footer-phone" class="footer-info-row"></p>
+      <p id="footer-email" class="footer-info-row"></p>
       <div class="social-row" id="footer-social"></div>
     </div>
     <div>
