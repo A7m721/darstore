@@ -281,7 +281,7 @@ header.site-header.is-scrolled{box-shadow:0 10px 26px rgba(0,0,0,.22);}
   opacity:0; pointer-events:none; transition:opacity .7s ease;
   overflow:hidden;
 }
-.hero-slide.active{position:relative; opacity:1; pointer-events:auto;}
+.hero-slide.active{opacity:1; pointer-events:auto;}
 /* لمسة توهج زخرفية بدل الصورة — دايرة ضوء ذهبية خفيفة في الزاوية */
 .hero-slide::before{
   content:''; position:absolute; inset:0; pointer-events:none;
