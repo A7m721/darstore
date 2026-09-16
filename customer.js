@@ -288,9 +288,9 @@ function applySettings() {
     $("#topbar-phone-item").style.display = "flex";
     $("#topbar-dot").style.display = "";
   }
-  if (s.phone) $("#footer-phone").textContent = "📞 " + s.phone;
-  if (s.email) $("#footer-email").textContent = "✉️ " + s.email;
-  if (s.address) $("#footer-address").textContent = "📍 " + s.address;
+  if (s.phone) $("#footer-phone").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.8 2z"/></svg><span>${escapeHtml(s.phone)}</span>`;
+  if (s.email) $("#footer-email").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>${escapeHtml(s.email)}</span>`;
+  if (s.address) $("#footer-address").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.3"/></svg><span>${escapeHtml(s.address)}</span>`;
   if (s.privacyPolicy) $("#link-privacy").onclick = (e) => {
     e.preventDefault(); openTextModal("سياسة الخصوصية", s.privacyPolicy);
   };
@@ -305,9 +305,9 @@ function applySettings() {
 
   const social = $("#footer-social");
   social.innerHTML = "";
-  if (s.facebook) social.innerHTML += `<a href="${s.facebook}" target="_blank">f</a>`;
-  if (s.instagram) social.innerHTML += `<a href="${s.instagram}" target="_blank">ig</a>`;
-  if (s.whatsapp) social.innerHTML += `<a href="https://wa.me/${toIntlWhatsApp(s.whatsapp)}" target="_blank">wa</a>`;
+  if (s.facebook) social.innerHTML += `<a href="${s.facebook}" target="_blank" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.3-1.5 1.6-1.5h1.6V3.7C15.9 3.6 15 3.5 14 3.5c-2.4 0-4 1.4-4 4.1v2.3H7.3V13H10v8h3.5z"/></svg></a>`;
+  if (s.instagram) social.innerHTML += `<a href="${s.instagram}" target="_blank" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1"/></svg></a>`;
+  if (s.whatsapp) social.innerHTML += `<a href="https://wa.me/${toIntlWhatsApp(s.whatsapp)}" target="_blank" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.03 3C7.14 3 3.55 6.6 3.55 11.47c0 1.62.44 3.15 1.2 4.44L3.3 20l4.24-1.26a8.4 8.4 0 0 0 4.5 1.23c4.9 0 8.9-3.6 8.9-8.5S16.93 3 12.03 3zm0 15.4c-1.4 0-2.7-.4-3.8-1.1l-.27-.16-2.6.77.8-2.5-.18-.26a6.9 6.9 0 0 1-1.1-3.7c0-3.8 3.1-6.9 7.15-6.9 3.9 0 7.1 3.1 7.1 6.9 0 3.9-3.2 6.95-7.1 6.95z"/></svg></a>`;
 
   const topbarSocial = $("#topbar-social");
   topbarSocial.innerHTML = "";
@@ -1584,19 +1584,30 @@ function setupScrollReveal() {
 
 /* ---------------- Init ---------------- */
 async function init() {
-  applyTheme(currentTheme);
-  bindEvents();
-  bindAccountEvents();
-  setupRippleEffect();
-  applyStaticI18n();
-  renderCartCount();
-  renderWishlistCount();
-  await Promise.all([listenSettings(), listenBanners(), listenCategories(), listenReviews()]);
-  await listenProducts();
-  renderRecentlyViewed();
-  handleRoute();
-  setupScrollReveal();
-  setupHeaderScrollShadow();
+  try {
+    applyTheme(currentTheme);
+    bindEvents();
+    bindAccountEvents();
+    setupRippleEffect();
+    applyStaticI18n();
+    renderCartCount();
+    renderWishlistCount();
+    await Promise.all([listenSettings(), listenBanners(), listenCategories(), listenReviews()]);
+    await listenProducts();
+    renderRecentlyViewed();
+    handleRoute();
+    setupScrollReveal();
+    setupHeaderScrollShadow();
+  } finally {
+    hidePageLoader();
+  }
+}
+
+function hidePageLoader() {
+  const loader = $("#page-loader");
+  if (!loader) return;
+  loader.classList.add("hide");
+  setTimeout(() => { loader.style.display = "none"; }, 600);
 }
 
 init();
