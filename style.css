@@ -82,9 +82,6 @@
 :root[data-theme="light"] .submit-order-btn,
 :root[data-theme="light"] .badge-discount,
 :root[data-theme="light"] .cart-count{color:#FFFFFF;}
-:root[data-theme="light"] .hero-slide::before{
-  background:linear-gradient(90deg, rgba(10,18,14,.82) 8%, rgba(10,18,14,.35) 55%, rgba(10,18,14,.05) 100%);
-}
 :root[data-theme="light"] .modal-overlay{background:rgba(20,30,24,.45);}
 :root[data-theme="light"] .drawer-backdrop{background:rgba(20,30,24,.4);}
 :root[data-theme="light"] .toast{background:var(--text); color:#fff;}
@@ -276,20 +273,30 @@ header.site-header.is-scrolled{box-shadow:0 10px 26px rgba(0,0,0,.22);}
   content:''; width:16px; height:5px; background:var(--gold); border-radius:3px; margin-top:-2px;
 }
 
-/* ---------- Hero / Banners ---------- */
+/* ---------- Hero / Banners (نص + تدرّج لوني، بدون صور) ---------- */
 .hero{position:relative; margin:22px 0 44px; border-radius:22px; overflow:hidden; box-shadow:var(--shadow-lg); border:1px solid var(--line);}
-#hero-track{position:relative; min-height:400px;}
+#hero-track{position:relative; min-height:340px;}
 .hero-slide{
   position:absolute; inset:0; display:flex; align-items:center;
-  background-size:cover; background-position:center;
   opacity:0; pointer-events:none; transition:opacity .7s ease;
+  overflow:hidden;
 }
 .hero-slide.active{position:relative; opacity:1; pointer-events:auto;}
+/* لمسة توهج زخرفية بدل الصورة — دايرة ضوء ذهبية خفيفة في الزاوية */
 .hero-slide::before{
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(90deg, rgba(6,13,10,.92) 8%, rgba(6,13,10,.5) 55%, rgba(6,13,10,.1) 100%);
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(217,164,65,.20), transparent 40%),
+    radial-gradient(circle at 8% 100%, rgba(255,255,255,.06), transparent 45%);
 }
+.hero-slide[data-style="gold"]{ background:linear-gradient(120deg, #1B140A 0%, #3B2A10 45%, #6B4A12 100%); }
+.hero-slide[data-style="forest"]{ background:linear-gradient(120deg, #071C14 0%, #0F3524 45%, #1F6B46 100%); }
+.hero-slide[data-style="classic"]{ background:linear-gradient(120deg, #060B09 0%, #0F1D18 55%, #1B2E27 100%); }
+:root[data-theme="light"] .hero-slide[data-style="gold"]{ background:linear-gradient(120deg, #F3E6C8 0%, #E8D19E 50%, #D9A441 100%); }
+:root[data-theme="light"] .hero-slide[data-style="forest"]{ background:linear-gradient(120deg, #E4F3EC 0%, #BFE3D2 50%, #33A379 100%); }
+:root[data-theme="light"] .hero-slide[data-style="classic"]{ background:linear-gradient(120deg, #FFFFFF 0%, #F1EFE7 55%, #E6E1D4 100%); }
 .hero-content{position:relative; z-index:2; color:#fff; padding:0 54px; max-width:580px;}
+:root[data-theme="light"] .hero-content{color:var(--text);}
 .hero-slide.active .hero-content > *{animation:hero-content-in .6s var(--ease) backwards;}
 .hero-slide.active .hero-eyebrow{animation-delay:.05s;}
 .hero-slide.active h2{animation-delay:.12s;}
