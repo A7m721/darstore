@@ -72,7 +72,7 @@ const I18N = {
     confirm_order: "تأكيد الطلب", sending_order: "جاري إرسال الطلب...",
     order_success: "تم إرسال طلبك بنجاح! سنتواصل معك قريبًا.", track_now: "تتبع حالة طلبك الآن",
     my_orders: "طلباتي", back_to_store: "→ رجوع للمتجر",
-    my_orders_sub: "أدخل رقم الهاتف المستخدم عند الطلب لمتابعة حالة كل طلباتك", search: "بحث",
+    my_orders_sub: "سجّل دخول لمتابعة حالة كل طلباتك", search: "بحث",
     footer_links: "روابط", footer_privacy: "سياسة الخصوصية", footer_terms: "الشروط والأحكام",
     footer_contact: "تواصل معنا", footer_whatsapp: "واتساب",
     status_new: "جديد", status_processing: "قيد التجهيز", status_shipped: "تم الشحن",
@@ -103,7 +103,7 @@ const I18N = {
     confirm_order: "Confirm Order", sending_order: "Sending order...",
     order_success: "Your order was sent successfully! We'll contact you soon.", track_now: "Track your order now",
     my_orders: "My Orders", back_to_store: "→ Back to Store",
-    my_orders_sub: "Enter the phone number used when ordering to track all your orders", search: "Search",
+    my_orders_sub: "Sign in to track all your orders", search: "Search",
     footer_links: "Links", footer_privacy: "Privacy Policy", footer_terms: "Terms & Conditions",
     footer_contact: "Contact Us", footer_whatsapp: "WhatsApp",
     status_new: "New", status_processing: "Processing", status_shipped: "Shipped",
@@ -438,7 +438,7 @@ function renderHero(banners) {
   const track = $("#hero-track");
   const dots = $("#hero-dots");
   track.innerHTML = banners.map((b, i) => `
-    <div class="hero-slide ${i === 0 ? "active" : ""}" data-i="${i}" style="background-image:url('${b.imageUrl || ""}');">
+    <div class="hero-slide ${i === 0 ? "active" : ""}" data-i="${i}" data-style="${b.style || "classic"}">
       <div class="hero-content">
         <span class="hero-eyebrow">عرض مميز</span>
         <h2>${b.title || ""}</h2>
@@ -1403,12 +1403,10 @@ function initOrdersPage(prefillPhone) {
     trackByCurrentAccount();
     return;
   }
-  $("#orders-search-form").style.display = "";
+  // مش مسجل دخول — منمنعش ظهور خانة البحث خالص، وبنوري رسالة "سجّل دخول" بس
+  $("#orders-search-form").style.display = "none";
   $("#orders-login-hint").style.display = "";
-  const savedPhone = prefillPhone || localStorage.getItem("store_last_phone") || "";
-  $("#orders-phone-input").value = savedPhone;
   $("#orders-page-results").innerHTML = "";
-  if (savedPhone) trackOrdersByPhone(savedPhone);
 }
 
 function goToOrdersPage(prefillPhone) {
