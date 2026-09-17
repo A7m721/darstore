@@ -74,6 +74,7 @@ const I18N = {
     my_orders: "طلباتي", back_to_store: "→ رجوع للمتجر",
     my_orders_sub: "سجّل دخول لمتابعة حالة كل طلباتك", search: "بحث",
     footer_links: "روابط", footer_privacy: "سياسة الخصوصية", footer_terms: "الشروط والأحكام",
+    footer_about: "من نحن", footer_faq: "الأسئلة الشائعة",
     footer_contact: "تواصل معنا", footer_whatsapp: "واتساب",
     status_new: "جديد", status_processing: "قيد التجهيز", status_shipped: "تم الشحن",
     status_delivered: "تم التسليم", status_cancelled: "ملغي", order_cancelled_msg: "تم إلغاء هذا الطلب",
@@ -105,6 +106,7 @@ const I18N = {
     my_orders: "My Orders", back_to_store: "→ Back to Store",
     my_orders_sub: "Sign in to track all your orders", search: "Search",
     footer_links: "Links", footer_privacy: "Privacy Policy", footer_terms: "Terms & Conditions",
+    footer_about: "About Us", footer_faq: "FAQ",
     footer_contact: "Contact Us", footer_whatsapp: "WhatsApp",
     status_new: "New", status_processing: "Processing", status_shipped: "Shipped",
     status_delivered: "Delivered", status_cancelled: "Cancelled", order_cancelled_msg: "This order was cancelled",
@@ -257,6 +259,9 @@ function showToast(msg) {
 function saveCart() {
   localStorage.setItem("store_cart", JSON.stringify(cart));
   renderCartCount();
+  if (auth.currentUser) {
+    setDoc(doc(db, "customerProfiles", auth.currentUser.uid), { cart }, { merge: true }).catch(() => {});
+  }
 }
 
 /* ---------------- Settings ---------------- */
@@ -297,6 +302,15 @@ function applySettings() {
   if (s.termsAndConditions) $("#link-terms").onclick = (e) => {
     e.preventDefault(); openTextModal("الشروط والأحكام", s.termsAndConditions);
   };
+  if (s.aboutText) {
+    $("#link-about").style.display = "";
+    $("#link-about").onclick = (e) => { e.preventDefault(); openTextModal("من نحن", s.aboutText); };
+  }
+  if (s.faqText) {
+    $("#link-faq").style.display = "";
+    $("#link-faq").onclick = (e) => { e.preventDefault(); openTextModal("الأسئلة الشائعة", s.faqText); };
+  }
+  if (s.gaId) setupGoogleAnalytics(s.gaId);
   if (s.whatsapp) $("#link-whatsapp").href = `https://wa.me/${toIntlWhatsApp(s.whatsapp)}`;
   if (s.whatsapp) {
     $("#floating-whatsapp-btn").href = `https://wa.me/${toIntlWhatsApp(s.whatsapp)}`;
@@ -403,6 +417,20 @@ function setupPWA(s) {
   if (icon) $("#pwa-apple-icon").href = icon;
 }
 
+function setupGoogleAnalytics(gaId) {
+  if (!gaId || window.__gaLoaded) return;
+  window.__gaLoaded = true;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+  document.head.appendChild(script);
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { window.dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag("js", new Date());
+  gtag("config", gaId);
+}
+
 function openTextModal(title, text) {
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay open";
@@ -422,7 +450,9 @@ function listenBanners() {
   const q = query(collection(db, "banners"), orderBy("order", "asc"));
   return new Promise((resolve) => {
     onSnapshot(q, (snap) => {
-      const banners = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(b => b.active !== false);
+      const now = Date.now();
+      const banners = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter(b => b.active !== false && (!b.expiresAt || new Date(b.expiresAt).getTime() > now));
       renderHero(banners);
       resolve();
     }, (e) => {
@@ -433,8 +463,30 @@ function listenBanners() {
   });
 }
 
+function formatCountdown(ms) {
+  if (ms <= 0) return null;
+  const totalMinutes = Math.floor(ms / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  if (days > 0) return `ينتهي العرض خلال ${days} يوم و${hours} ساعة`;
+  if (hours > 0) return `ينتهي العرض خلال ${hours} ساعة و${minutes} دقيقة`;
+  return `ينتهي العرض خلال ${minutes} دقيقة`;
+}
+
+let heroCountdownTimer = null;
+function updateHeroCountdowns() {
+  $$(".hero-countdown").forEach(el => {
+    const ms = new Date(el.dataset.expires).getTime() - Date.now();
+    const text = formatCountdown(ms);
+    if (!text) { el.style.display = "none"; return; }
+    el.textContent = text;
+  });
+}
+
 function renderHero(banners) {
   if (!banners.length) { $("#hero-section").style.display = "none"; return; }
+  $("#hero-section").style.display = "";
   const track = $("#hero-track");
   const dots = $("#hero-dots");
   track.innerHTML = banners.map((b, i) => `
@@ -443,6 +495,7 @@ function renderHero(banners) {
         <span class="hero-eyebrow">عرض مميز</span>
         <h2>${b.title || ""}</h2>
         <p>${b.description || ""}</p>
+        ${b.expiresAt ? `<span class="hero-countdown" data-expires="${b.expiresAt}"></span>` : ""}
         ${b.buttonLink ? `<a class="btn" href="${b.buttonLink}">تسوق الآن</a>` : ""}
       </div>
     </div>`).join("");
@@ -453,6 +506,10 @@ function renderHero(banners) {
   if (banners.length > 1) {
     heroTimer = setInterval(() => setHeroSlide((heroSlideIndex + 1) % banners.length, banners.length), 5000);
   }
+
+  clearInterval(heroCountdownTimer);
+  updateHeroCountdowns();
+  heroCountdownTimer = setInterval(updateHeroCountdowns, 30000);
 }
 
 function setHeroSlide(i, total) {
@@ -696,6 +753,14 @@ function openDetailModal(productId) {
         </div></div>` : ""}
       </div>` : ""}
       <div class="detail-stock" id="detail-stock">${outOfStock ? "غير متوفر حاليًا" : (hasVariants ? "الرجاء اختيار الخيار المناسب" : (Number(p.quantity) <= LOW_STOCK_THRESHOLD ? `<span class="low-stock-text">⚡ متبقي ${p.quantity} قطع فقط — اطلب الآن</span>` : `الكمية المتاحة: ${p.quantity ?? "-"}`))}</div>
+      ${outOfStock ? `
+      <div class="stock-alert-box" id="stock-alert-box">
+        <p class="stock-alert-label">حابب تعرف لما يتوفر تاني؟</p>
+        <div class="stock-alert-row">
+          <input type="tel" id="stock-alert-phone" placeholder="رقم هاتفك">
+          <button type="button" id="stock-alert-btn" class="btn-track-search">نبّهني</button>
+        </div>
+      </div>` : ""}
       <div class="trust-badges-mini">
         <span class="trust-badge-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="14" height="10"/><path d="M15 10h3.5l3.5 3.5V17h-7z"/></svg> شحن سريع</span>
         <span class="trust-badge-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 10h20"/></svg> دفع آمن</span>
@@ -853,6 +918,25 @@ function openDetailModal(productId) {
   const shareBtn = $("#detail-share-btn");
   if (shareBtn) shareBtn.onclick = () => shareProduct(p);
 
+  const stockAlertBtn = $("#stock-alert-btn");
+  if (stockAlertBtn) stockAlertBtn.onclick = async () => {
+    const phone = $("#stock-alert-phone").value.trim();
+    if (!phone) return;
+    stockAlertBtn.disabled = true;
+    stockAlertBtn.textContent = "جاري الإرسال...";
+    try {
+      await addDoc(collection(db, "stockAlerts"), {
+        productId: p.id, productName: p.name || "", phone, notified: false, createdAt: serverTimestamp()
+      });
+      $("#stock-alert-box").innerHTML = `<p class="stock-alert-success">تم التسجيل، هنبلغك أول ما يتوفر ✔</p>`;
+    } catch (err) {
+      console.error("خطأ في تسجيل تنبيه التوفر:", err);
+      showToast("حدث خطأ، حاول مرة أخرى");
+      stockAlertBtn.disabled = false;
+      stockAlertBtn.textContent = "نبّهني";
+    }
+  };
+
   let selectedRating = 5;
   const starEls = $$("#star-picker span");
   starEls.forEach(s => {
@@ -1008,7 +1092,7 @@ async function submitOrder(e) {
       orderData.discountAmount = discountAmount;
     }
 
-    await addDoc(collection(db, "orders"), orderData);
+    const orderRef = await addDoc(collection(db, "orders"), orderData);
 
     await upsertCustomer(name, phone, total);
     await Promise.all(items.map(item =>
@@ -1018,9 +1102,18 @@ async function submitOrder(e) {
       await updateDoc(doc(db, "coupons", appliedCoupon.id), { usedCount: increment(1) }).catch(() => {});
     }
 
+    let waConfirmBtn = "";
+    if (SETTINGS.whatsapp) {
+      const itemsLine = items.map(i => `${i.name}${i.variantLabel ? ` (${i.variantLabel})` : ""} × ${i.qty}`).join("\n");
+      const waText = `مرحبًا، عايز أأكد طلبي من ${SETTINGS.storeName || "المتجر"}:\nرقم الطلب: #${orderRef.id.slice(0, 6)}\n${itemsLine}\nالإجمالي: ${money(total)}`;
+      const waLink = `https://wa.me/${toIntlWhatsApp(SETTINGS.whatsapp)}?text=${encodeURIComponent(waText)}`;
+      waConfirmBtn = `<a href="${waLink}" target="_blank" class="track-success-cta" style="margin-inline-start:8px;">أكّد طلبك عبر واتساب</a>`;
+    }
+
     $("#checkout-msg").innerHTML = `
       <div class="form-msg success">تم إرسال طلبك بنجاح! سنتواصل معك قريبًا.</div>
-      <button type="button" class="track-success-cta" id="goto-track-btn">تتبع حالة طلبك الآن</button>`;
+      <button type="button" class="track-success-cta" id="goto-track-btn">تتبع حالة طلبك الآن</button>
+      ${waConfirmBtn}`;
     $("#goto-track-btn").onclick = () => { closeModal("#checkout-modal"); goToOrdersPage(phone); };
     cart = [];
     saveCart();
@@ -1288,6 +1381,12 @@ async function fetchCustomerProfile(uid) {
   try {
     const snap = await getDoc(doc(db, "customerProfiles", uid));
     CUSTOMER_PROFILE = snap.exists() ? snap.data() : null;
+    if (CUSTOMER_PROFILE?.cart && Array.isArray(CUSTOMER_PROFILE.cart) && CUSTOMER_PROFILE.cart.length && !cart.length) {
+      cart = CUSTOMER_PROFILE.cart;
+      localStorage.setItem("store_cart", JSON.stringify(cart));
+      renderCartCount();
+      if ($("#cart-drawer").classList.contains("open")) renderCartDrawer();
+    }
   } catch (e) {
     console.error("خطأ في تحميل بيانات الحساب:", e);
     CUSTOMER_PROFILE = null;
