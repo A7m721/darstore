@@ -893,6 +893,16 @@ function openDetailModal(productId) {
       $$('#size-options .variant-chip').forEach(b => b.classList.toggle("active", b === btn));
       updateVariantUI();
     });
+    // لو فيه خيار واحد بس للون أو المقاس، نختاره تلقائيًا من غير ما نجبر العميل يدوس عليه
+    if (variantColors.length === 1) {
+      selectedColor = variantColors[0];
+      $$('#color-options .variant-chip').forEach(b => b.classList.toggle("active", b.dataset.color === selectedColor));
+    }
+    if (variantSizes.length === 1) {
+      selectedSize = variantSizes[0];
+      $$('#size-options .variant-chip').forEach(b => b.classList.toggle("active", b.dataset.size === selectedSize));
+    }
+    updateVariantUI();
   }
 
   $("#qty-minus").onclick = () => { qty = Math.max(1, qty - 1); qtyEl.textContent = qty; };
