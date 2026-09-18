@@ -319,15 +319,15 @@ function applySettings() {
 
   const social = $("#footer-social");
   social.innerHTML = "";
-  if (s.facebook) social.innerHTML += `<a href="${s.facebook}" target="_blank" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.3-1.5 1.6-1.5h1.6V3.7C15.9 3.6 15 3.5 14 3.5c-2.4 0-4 1.4-4 4.1v2.3H7.3V13H10v8h3.5z"/></svg></a>`;
-  if (s.instagram) social.innerHTML += `<a href="${s.instagram}" target="_blank" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1"/></svg></a>`;
-  if (s.whatsapp) social.innerHTML += `<a href="https://wa.me/${toIntlWhatsApp(s.whatsapp)}" target="_blank" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.03 3C7.14 3 3.55 6.6 3.55 11.47c0 1.62.44 3.15 1.2 4.44L3.3 20l4.24-1.26a8.4 8.4 0 0 0 4.5 1.23c4.9 0 8.9-3.6 8.9-8.5S16.93 3 12.03 3zm0 15.4c-1.4 0-2.7-.4-3.8-1.1l-.27-.16-2.6.77.8-2.5-.18-.26a6.9 6.9 0 0 1-1.1-3.7c0-3.8 3.1-6.9 7.15-6.9 3.9 0 7.1 3.1 7.1 6.9 0 3.9-3.2 6.95-7.1 6.95z"/></svg></a>`;
+  if (s.facebook) social.innerHTML += `<a href="${s.facebook}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.3-1.5 1.6-1.5h1.6V3.7C15.9 3.6 15 3.5 14 3.5c-2.4 0-4 1.4-4 4.1v2.3H7.3V13H10v8h3.5z"/></svg></a>`;
+  if (s.instagram) social.innerHTML += `<a href="${s.instagram}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1"/></svg></a>`;
+  if (s.whatsapp) social.innerHTML += `<a href="https://wa.me/${toIntlWhatsApp(s.whatsapp)}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.03 3C7.14 3 3.55 6.6 3.55 11.47c0 1.62.44 3.15 1.2 4.44L3.3 20l4.24-1.26a8.4 8.4 0 0 0 4.5 1.23c4.9 0 8.9-3.6 8.9-8.5S16.93 3 12.03 3zm0 15.4c-1.4 0-2.7-.4-3.8-1.1l-.27-.16-2.6.77.8-2.5-.18-.26a6.9 6.9 0 0 1-1.1-3.7c0-3.8 3.1-6.9 7.15-6.9 3.9 0 7.1 3.1 7.1 6.9 0 3.9-3.2 6.95-7.1 6.95z"/></svg></a>`;
 
   const topbarSocial = $("#topbar-social");
   topbarSocial.innerHTML = "";
-  if (s.facebook) topbarSocial.innerHTML += `<a href="${s.facebook}" target="_blank" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.3-1.5 1.6-1.5h1.6V3.7C15.9 3.6 15 3.5 14 3.5c-2.4 0-4 1.4-4 4.1v2.3H7.3V13H10v8h3.5z"/></svg></a>`;
-  if (s.instagram) topbarSocial.innerHTML += `<a href="${s.instagram}" target="_blank" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1"/></svg></a>`;
-  if (s.whatsapp) topbarSocial.innerHTML += `<a href="https://wa.me/${toIntlWhatsApp(s.whatsapp)}" target="_blank" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.03 3C7.14 3 3.55 6.6 3.55 11.47c0 1.62.44 3.15 1.2 4.44L3.3 20l4.24-1.26a8.4 8.4 0 0 0 4.5 1.23c4.9 0 8.9-3.6 8.9-8.5S16.93 3 12.03 3zm0 15.4c-1.4 0-2.7-.4-3.8-1.1l-.27-.16-2.6.77.8-2.5-.18-.26a6.9 6.9 0 0 1-1.1-3.7c0-3.8 3.1-6.9 7.15-6.9 3.9 0 7.1 3.1 7.1 6.9 0 3.9-3.2 6.95-7.1 6.95z"/></svg></a>`;
+  if (s.facebook) topbarSocial.innerHTML += `<a href="${s.facebook}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.3-1.5 1.6-1.5h1.6V3.7C15.9 3.6 15 3.5 14 3.5c-2.4 0-4 1.4-4 4.1v2.3H7.3V13H10v8h3.5z"/></svg></a>`;
+  if (s.instagram) topbarSocial.innerHTML += `<a href="${s.instagram}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1"/></svg></a>`;
+  if (s.whatsapp) topbarSocial.innerHTML += `<a href="https://wa.me/${toIntlWhatsApp(s.whatsapp)}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.03 3C7.14 3 3.55 6.6 3.55 11.47c0 1.62.44 3.15 1.2 4.44L3.3 20l4.24-1.26a8.4 8.4 0 0 0 4.5 1.23c4.9 0 8.9-3.6 8.9-8.5S16.93 3 12.03 3zm0 15.4c-1.4 0-2.7-.4-3.8-1.1l-.27-.16-2.6.77.8-2.5-.18-.26a6.9 6.9 0 0 1-1.1-3.7c0-3.8 3.1-6.9 7.15-6.9 3.9 0 7.1 3.1 7.1 6.9 0 3.9-3.2 6.95-7.1 6.95z"/></svg></a>`;
 
   $("#footer-year").textContent = new Date().getFullYear();
 
@@ -1107,7 +1107,7 @@ async function submitOrder(e) {
       const itemsLine = items.map(i => `${i.name}${i.variantLabel ? ` (${i.variantLabel})` : ""} × ${i.qty}`).join("\n");
       const waText = `مرحبًا، عايز أأكد طلبي من ${SETTINGS.storeName || "المتجر"}:\nرقم الطلب: #${orderRef.id.slice(0, 6)}\n${itemsLine}\nالإجمالي: ${money(total)}`;
       const waLink = `https://wa.me/${toIntlWhatsApp(SETTINGS.whatsapp)}?text=${encodeURIComponent(waText)}`;
-      waConfirmBtn = `<a href="${waLink}" target="_blank" class="track-success-cta" style="margin-inline-start:8px;">أكّد طلبك عبر واتساب</a>`;
+      waConfirmBtn = `<a href="${waLink}" target="_blank" rel="noopener noreferrer" class="track-success-cta" style="margin-inline-start:8px;">أكّد طلبك عبر واتساب</a>`;
     }
 
     $("#checkout-msg").innerHTML = `
