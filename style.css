@@ -446,6 +446,8 @@ header.site-header.is-scrolled{box-shadow:0 10px 26px rgba(0,0,0,.22);}
 .btn-add:hover{filter:brightness(1.08); transform:translateY(-1px);}
 .btn-add:active:not(:disabled){transform:translateY(0) scale(.95);}
 .btn-add:disabled, .btn-details:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+.btn-add.is-disabled, .detail-add-btn.is-disabled, .wishlist-move-btn.is-disabled{opacity:.5;}
+.btn-add.is-disabled:active, .detail-add-btn.is-disabled:active, .wishlist-move-btn.is-disabled:active{transform:none;}
 
 .empty-state{padding:70px 20px; text-align:center; color:var(--text-muted); font-size:14.5px;}
 
