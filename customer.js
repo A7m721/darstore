@@ -655,7 +655,7 @@ function renderProducts() {
         </div>
         <div class="product-actions">
           <button class="btn-details" data-action="details">${t("details")}</button>
-          <button class="btn-add" data-action="add" ${outOfStock ? "disabled" : ""}>${hasVariants ? t("select_option") : t("add_to_cart")}</button>
+          <button class="btn-add ${outOfStock ? "is-disabled" : ""}" data-action="add">${hasVariants ? t("select_option") : t("add_to_cart")}</button>
         </div>
       </div>
     </div>`;
@@ -766,7 +766,7 @@ function openDetailModal(productId) {
         </div>
       </div>
       <div class="detail-actions-row">
-        <button class="detail-add-btn" id="detail-add-btn" ${outOfStock || hasVariants ? "disabled" : ""}>إضافة للسلة</button>
+        <button class="detail-add-btn" id="detail-add-btn" ${hasVariants ? "disabled" : ""}>إضافة للسلة</button>
         <button class="detail-wishlist-btn ${inWishlist ? "active" : ""}" id="detail-wishlist-btn" aria-label="المفضلة">
           <svg viewBox="0 0 24 24"><path d="M20.8 4.6c-1.7-1.5-4.4-1.5-6 .2L12 7.6l-2.8-2.8c-1.6-1.7-4.3-1.7-6 0-1.7 1.7-1.7 4.4 0 6.2L12 20l8.8-8.9c1.7-1.8 1.7-4.6 0-6.3z"/></svg>
         </button>
@@ -868,7 +868,8 @@ function openDetailModal(productId) {
       : (Number(selectedVariant.quantity) <= LOW_STOCK_THRESHOLD
         ? `<span class="low-stock-text">⚡ متبقي ${selectedVariant.quantity} قطع فقط — اطلب الآن</span>`
         : `الكمية المتاحة: ${selectedVariant.quantity}`);
-    addBtn.disabled = vOutOfStock;
+    addBtn.disabled = false;
+    addBtn.classList.toggle("is-disabled", vOutOfStock);
     if (selectedVariant.image && mainImg) mainImg.src = selectedVariant.image;
     qty = 1;
     qtyEl.textContent = qty;
@@ -907,8 +908,7 @@ function openDetailModal(productId) {
   if (addBtn) addBtn.onclick = () => {
     if (hasVariants && !selectedVariant) return;
     const variantPayload = hasVariants ? { id: selectedVariant.id, label: [selectedVariant.color, selectedVariant.size].filter(Boolean).join(" / ") } : null;
-    addToCart(p.id, qty, variantPayload);
-    closeModal("#detail-modal");
+    if (addToCart(p.id, qty, variantPayload)) closeModal("#detail-modal");
   };
 
   const wishBtn = $("#detail-wishlist-btn");
@@ -1166,16 +1166,16 @@ function getCartItemName(item) {
 
 function addToCart(productId, qty, variant = null) {
   const p = ALL_PRODUCTS.find(x => x.id === productId);
-  if (!p) return;
+  if (!p) return false;
   if (variant) {
     const liveVariant = (p.variants || []).find(v => v.id === variant.id);
     if (!liveVariant || Number(liveVariant.quantity) <= 0) {
       showToast("عذرًا، هذا الخيار غير متوفر حاليًا 😕");
-      return;
+      return false;
     }
   } else if (p.status === "unavailable" || Number(p.quantity) <= 0) {
     showToast("عذرًا، هذا المنتج غير متوفر حاليًا 😕");
-    return;
+    return false;
   }
   const cartKey = variant ? `${productId}::${variant.id}` : productId;
   const existing = cart.find(c => c.cartKey === cartKey);
@@ -1185,6 +1185,7 @@ function addToCart(productId, qty, variant = null) {
   bounceCartIcon();
   if (navigator.vibrate) { try { navigator.vibrate(35); } catch (e) {} }
   showToast("تمت الإضافة إلى السلة ✔");
+  return true;
 }
 
 function bounceCartIcon() {
@@ -1294,7 +1295,7 @@ function renderWishlistDrawer() {
           <h4>${p.name || ""}</h4>
           <div class="price-now">${money(p.price)}</div>
           <div class="wishlist-item-actions">
-            <button class="wishlist-move-btn" data-act="addcart" ${outOfStock ? "disabled" : ""}>أضف للسلة</button>
+            <button class="wishlist-move-btn ${outOfStock ? "is-disabled" : ""}" data-act="addcart">أضف للسلة</button>
             <span class="cart-remove" data-act="remove">إزالة</span>
           </div>
         </div>
