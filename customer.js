@@ -753,14 +753,6 @@ function openDetailModal(productId) {
         </div></div>` : ""}
       </div>` : ""}
       <div class="detail-stock" id="detail-stock">${outOfStock ? "غير متوفر حاليًا" : (hasVariants ? "الرجاء اختيار الخيار المناسب" : (Number(p.quantity) <= LOW_STOCK_THRESHOLD ? `<span class="low-stock-text">⚡ متبقي ${p.quantity} قطع فقط — اطلب الآن</span>` : `الكمية المتاحة: ${p.quantity ?? "-"}`))}</div>
-      ${outOfStock ? `
-      <div class="stock-alert-box" id="stock-alert-box">
-        <p class="stock-alert-label">حابب تعرف لما يتوفر تاني؟</p>
-        <div class="stock-alert-row">
-          <input type="tel" id="stock-alert-phone" placeholder="رقم هاتفك">
-          <button type="button" id="stock-alert-btn" class="btn-track-search">نبّهني</button>
-        </div>
-      </div>` : ""}
       <div class="trust-badges-mini">
         <span class="trust-badge-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="14" height="10"/><path d="M15 10h3.5l3.5 3.5V17h-7z"/></svg> شحن سريع</span>
         <span class="trust-badge-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 10h20"/></svg> دفع آمن</span>
@@ -927,25 +919,6 @@ function openDetailModal(productId) {
 
   const shareBtn = $("#detail-share-btn");
   if (shareBtn) shareBtn.onclick = () => shareProduct(p);
-
-  const stockAlertBtn = $("#stock-alert-btn");
-  if (stockAlertBtn) stockAlertBtn.onclick = async () => {
-    const phone = $("#stock-alert-phone").value.trim();
-    if (!phone) return;
-    stockAlertBtn.disabled = true;
-    stockAlertBtn.textContent = "جاري الإرسال...";
-    try {
-      await addDoc(collection(db, "stockAlerts"), {
-        productId: p.id, productName: p.name || "", phone, notified: false, createdAt: serverTimestamp()
-      });
-      $("#stock-alert-box").innerHTML = `<p class="stock-alert-success">تم التسجيل، هنبلغك أول ما يتوفر ✔</p>`;
-    } catch (err) {
-      console.error("خطأ في تسجيل تنبيه التوفر:", err);
-      showToast("حدث خطأ، حاول مرة أخرى");
-      stockAlertBtn.disabled = false;
-      stockAlertBtn.textContent = "نبّهني";
-    }
-  };
 
   let selectedRating = 5;
   const starEls = $$("#star-picker span");
@@ -1194,6 +1167,16 @@ function getCartItemName(item) {
 function addToCart(productId, qty, variant = null) {
   const p = ALL_PRODUCTS.find(x => x.id === productId);
   if (!p) return;
+  if (variant) {
+    const liveVariant = (p.variants || []).find(v => v.id === variant.id);
+    if (!liveVariant || Number(liveVariant.quantity) <= 0) {
+      showToast("عذرًا، هذا الخيار غير متوفر حاليًا 😕");
+      return;
+    }
+  } else if (p.status === "unavailable" || Number(p.quantity) <= 0) {
+    showToast("عذرًا، هذا المنتج غير متوفر حاليًا 😕");
+    return;
+  }
   const cartKey = variant ? `${productId}::${variant.id}` : productId;
   const existing = cart.find(c => c.cartKey === cartKey);
   if (existing) existing.qty += qty;
