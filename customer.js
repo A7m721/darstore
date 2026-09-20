@@ -474,14 +474,51 @@ function formatCountdown(ms) {
   return `ينتهي العرض خلال ${minutes} دقيقة`;
 }
 
-let heroCountdownTimer = null;
-function updateHeroCountdowns() {
-  $$(".hero-countdown").forEach(el => {
+function updateAllCountdowns() {
+  $$(".hero-countdown, .flash-countdown").forEach(el => {
     const ms = new Date(el.dataset.expires).getTime() - Date.now();
     const text = formatCountdown(ms);
     if (!text) { el.style.display = "none"; return; }
     el.textContent = text;
   });
+}
+
+/* ---------------- Flash sale + restocked badges ---------------- */
+function isFlashSaleActive(p) {
+  if (!p.flashPrice || !p.flashStartsAt || !p.flashEndsAt) return false;
+  const now = Date.now();
+  return new Date(p.flashStartsAt).getTime() <= now && new Date(p.flashEndsAt).getTime() > now;
+}
+function getEffectivePrice(p) {
+  return isFlashSaleActive(p) ? Number(p.flashPrice) : Number(p.price);
+}
+function getEffectiveOldPrice(p) {
+  if (isFlashSaleActive(p)) return Number(p.price);
+  return p.oldPrice || null;
+}
+const RESTOCK_BADGE_WINDOW_MS = 48 * 60 * 60 * 1000; // 48 ساعة
+function isRecentlyRestocked(p) {
+  const t = p.restockedAt?.toDate ? p.restockedAt.toDate().getTime() : null;
+  return t ? (Date.now() - t) < RESTOCK_BADGE_WINDOW_MS : false;
+}
+/* بادچ واحد بس ظاهر في نفس المكان، بترتيب أولوية: عرض محدود > خصم > توفر من جديد > ليبل مخصص */
+function getProductBadgeHtml(p) {
+  if (isFlashSaleActive(p)) {
+    return `<span class="badge-label badge-flash">⚡ عرض لفترة محدودة</span>`;
+  }
+  const effPrice = getEffectivePrice(p);
+  const effOldPrice = getEffectiveOldPrice(p);
+  if (effOldPrice && effOldPrice > effPrice) {
+    const pct = Math.round((1 - effPrice / effOldPrice) * 100);
+    return `<span class="badge-discount">${t("discount")} ${pct}%</span>`;
+  }
+  if (isRecentlyRestocked(p)) {
+    return `<span class="badge-label badge-restocked">🔄 توفر من جديد</span>`;
+  }
+  if (p.label) {
+    return `<span class="badge-label">${escapeHtml(p.label)}</span>`;
+  }
+  return "";
 }
 
 function renderHero(banners) {
@@ -507,9 +544,7 @@ function renderHero(banners) {
     heroTimer = setInterval(() => setHeroSlide((heroSlideIndex + 1) % banners.length, banners.length), 5000);
   }
 
-  clearInterval(heroCountdownTimer);
-  updateHeroCountdowns();
-  heroCountdownTimer = setInterval(updateHeroCountdowns, 30000);
+  updateAllCountdowns();
 }
 
 function setHeroSlide(i, total) {
@@ -601,8 +636,8 @@ function getFilteredProducts() {
   });
 
   const sorted = list.slice();
-  if (currentSort === "price-asc") sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
-  else if (currentSort === "price-desc") sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+  if (currentSort === "price-asc") sorted.sort((a, b) => getEffectivePrice(a) - getEffectivePrice(b));
+  else if (currentSort === "price-desc") sorted.sort((a, b) => getEffectivePrice(b) - getEffectivePrice(a));
   else if (currentSort === "bestselling") sorted.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0));
   else sorted.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
   return sorted;
@@ -621,8 +656,9 @@ function renderProducts() {
   }
 
   grid.innerHTML = list.map(p => {
-    const hasDiscount = p.oldPrice && p.oldPrice > p.price;
-    const discountPct = hasDiscount ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+    const effPrice = getEffectivePrice(p);
+    const effOldPrice = getEffectiveOldPrice(p);
+    const hasDiscount = effOldPrice && effOldPrice > effPrice;
     const hasVariants = !!(p.variants && p.variants.length);
     const outOfStock = hasVariants
       ? p.variants.every(v => Number(v.quantity) <= 0)
@@ -631,11 +667,12 @@ function renderProducts() {
     const isLowStock = !outOfStock && totalQty > 0 && totalQty <= LOW_STOCK_THRESHOLD;
     const stats = getReviewStats(p.id);
     const inWishlist = wishlist.includes(p.id);
+    const flashCountdown = isFlashSaleActive(p) ? `<span class="flash-countdown" data-expires="${p.flashEndsAt}"></span>` : "";
     return `
     <div class="product-card" data-id="${p.id}">
       <div class="product-thumb" data-action="details">
         <img src="${p.mainImage || ""}" alt="${p.name || ""}" loading="lazy" onload="this.classList.add('loaded')">
-        ${hasDiscount ? `<span class="badge-discount">${t("discount")} ${discountPct}%</span>` : (p.label ? `<span class="badge-label">${escapeHtml(p.label)}</span>` : "")}
+        ${getProductBadgeHtml(p)}
         <button class="wishlist-btn ${inWishlist ? "active" : ""}" data-action="wishlist" aria-label="Wishlist">
           <svg viewBox="0 0 24 24"><path d="M20.8 4.6c-1.7-1.5-4.4-1.5-6 .2L12 7.6l-2.8-2.8c-1.6-1.7-4.3-1.7-6 0-1.7 1.7-1.7 4.4 0 6.2L12 20l8.8-8.9c1.7-1.8 1.7-4.6 0-6.3z"/></svg>
         </button>
@@ -650,9 +687,10 @@ function renderProducts() {
         <div class="product-name" data-action="details">${p.name || ""}</div>
         <div class="rating-row">${renderStars(stats.avg)} <span>${stats.count ? `${stats.avg.toFixed(1)} (${stats.count})` : t("no_rating")}</span></div>
         <div class="price-row">
-          <span class="price-now">${money(p.price)}</span>
-          ${hasDiscount ? `<span class="price-old">${money(p.oldPrice)}</span>` : ""}
+          <span class="price-now">${money(effPrice)}</span>
+          ${hasDiscount ? `<span class="price-old">${money(effOldPrice)}</span>` : ""}
         </div>
+        ${flashCountdown}
         <div class="product-actions">
           <button class="btn-details" data-action="details">${t("details")}</button>
           <button class="btn-add ${outOfStock ? "is-disabled" : ""}" data-action="add">${hasVariants ? t("select_option") : t("add_to_cart")}</button>
@@ -675,6 +713,7 @@ function renderProducts() {
       wishBtn.classList.toggle("active", wishlist.includes(id));
     };
   });
+  updateAllCountdowns();
 }
 
 /* ---------------- Product detail modal ---------------- */
@@ -684,7 +723,7 @@ function miniCardHtml(p) {
     <img src="${p.mainImage || ""}" alt="${p.name || ""}" loading="lazy">
     <div class="mp-info">
       <div class="mp-name">${p.name || ""}</div>
-      <div class="mp-price">${money(p.price)}</div>
+      <div class="mp-price">${money(getEffectivePrice(p))}</div>
     </div>
   </div>`;
 }
@@ -719,7 +758,10 @@ function openDetailModal(productId) {
     ? p.variants.every(v => Number(v.quantity) <= 0)
     : (p.status === "unavailable" || Number(p.quantity) <= 0);
   const catName = ALL_CATEGORIES.find(c => c.id === p.category)?.name || "";
-  const hasDiscount = p.oldPrice && p.oldPrice > p.price;
+  const effPrice = getEffectivePrice(p);
+  const effOldPrice = getEffectiveOldPrice(p);
+  const hasDiscount = effOldPrice && effOldPrice > effPrice;
+  const flashActive = isFlashSaleActive(p);
   const stats = getReviewStats(p.id);
   const inWishlist = wishlist.includes(p.id);
   const productReviews = REVIEWS.filter(r => r.productId === p.id).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
@@ -740,9 +782,10 @@ function openDetailModal(productId) {
       <div class="rating-row">${renderStars(stats.avg)} <span>${stats.count ? `${stats.avg.toFixed(1)} (${stats.count} تقييم)` : "لا يوجد تقييمات بعد"}</span></div>
       <p class="detail-desc">${p.description || ""}</p>
       <div class="detail-price-row" id="detail-price-row">
-        <span class="price-now">${money(p.price)}</span>
-        ${hasDiscount ? `<span class="price-old">${money(p.oldPrice)}</span>` : ""}
+        <span class="price-now">${money(effPrice)}</span>
+        ${hasDiscount ? `<span class="price-old">${money(effOldPrice)}</span>` : ""}
       </div>
+      ${flashActive ? `<span class="flash-countdown" data-expires="${p.flashEndsAt}"></span>` : ""}
       ${hasVariants ? `
       <div class="variant-selector" id="variant-selector">
         ${variantColors.length ? `<div class="variant-group"><label>اللون</label><div class="variant-options" id="color-options">
@@ -860,7 +903,7 @@ function openDetailModal(productId) {
       addBtn.disabled = true;
       return;
     }
-    const vPrice = selectedVariant.priceOverride || p.price;
+    const vPrice = selectedVariant.priceOverride || getEffectivePrice(p);
     if (priceEl) priceEl.textContent = money(vPrice);
     const vOutOfStock = Number(selectedVariant.quantity) <= 0;
     stockEl.innerHTML = vOutOfStock
@@ -955,6 +998,7 @@ function openDetailModal(productId) {
   });
 
   openModal("#detail-modal");
+  updateAllCountdowns();
 }
 
 /* ---------------- Checkout ---------------- */
@@ -1151,7 +1195,7 @@ function getCartItemPrice(item) {
   const p = getCartItemProduct(item);
   if (!p) return 0;
   const v = getCartItemVariant(item);
-  return (v && v.priceOverride) ? v.priceOverride : p.price;
+  return (v && v.priceOverride) ? v.priceOverride : getEffectivePrice(p);
 }
 function getCartItemImage(item) {
   const p = getCartItemProduct(item);
@@ -1459,6 +1503,9 @@ function renderTrackResults(orders) {
     const deliveryLine = showDelivery
       ? `<div class="delivery-estimate">🚚 التسليم المتوقع: ${new Date(o.estimatedDelivery + "T00:00:00").toLocaleDateString("ar-EG", { weekday: "long", day: "numeric", month: "long" })}</div>`
       : "";
+    const returnBtn = o.status === "تم التسليم"
+      ? `<button type="button" class="track-success-cta return-request-btn" data-order-id="${o.id}" style="margin-top:12px;">طلب استبدال/استرجاع</button>`
+      : "";
     return `
       <div class="order-track-card">
         <div class="order-track-head">
@@ -1469,8 +1516,72 @@ function renderTrackResults(orders) {
         ${renderOrderStepper(o.status)}
         ${deliveryLine}
         <div class="order-items-summary">${itemsLine}${couponLine}</div>
+        ${returnBtn}
       </div>`;
   }).join("") + `</div>`;
+
+  resultsBox.querySelectorAll(".return-request-btn").forEach(btn => btn.onclick = () => {
+    const order = orders.find(o => o.id === btn.dataset.orderId);
+    if (order) openReturnRequestModal(order);
+  });
+}
+
+function openReturnRequestModal(order) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay open";
+  overlay.innerHTML = `
+    <div class="modal-box" style="max-width:440px; padding:30px;">
+      <button type="button" class="modal-close">✕</button>
+      <h3 style="margin-bottom:18px;">طلب استبدال/استرجاع</h3>
+      <form id="return-request-form" style="display:flex; flex-direction:column; gap:14px;">
+        <div class="form-group">
+          <label>السبب</label>
+          <select id="return-reason">
+            <option value="منتج تالف">المنتج وصل تالف</option>
+            <option value="مقاس غير مناسب">المقاس غير مناسب</option>
+            <option value="غير مطابق للوصف">المنتج غير مطابق للوصف</option>
+            <option value="سبب آخر">سبب آخر</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>تفاصيل إضافية (اختياري)</label>
+          <textarea id="return-note" rows="3"></textarea>
+        </div>
+        <div id="return-msg"></div>
+        <button type="submit" class="submit-order-btn">إرسال الطلب</button>
+      </form>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector(".modal-close").onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  overlay.querySelector("#return-request-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const reason = overlay.querySelector("#return-reason").value;
+    const note = overlay.querySelector("#return-note").value.trim();
+    const msgEl = overlay.querySelector("#return-msg");
+    const btn = overlay.querySelector("button[type=submit]");
+    btn.disabled = true;
+    btn.textContent = "جاري الإرسال...";
+    try {
+      await addDoc(collection(db, "returnRequests"), {
+        orderId: order.id,
+        customerName: order.customerName || "",
+        phone: order.phone || "",
+        reason,
+        note,
+        status: "جديد",
+        createdAt: serverTimestamp()
+      });
+      msgEl.innerHTML = `<div class="form-msg success">تم إرسال طلبك بنجاح، هنتواصل معك قريبًا.</div>`;
+      setTimeout(() => overlay.remove(), 1800);
+    } catch (err) {
+      console.error("خطأ في إرسال طلب الاستبدال:", err);
+      msgEl.innerHTML = `<div class="form-msg error">حدث خطأ، حاول مرة أخرى.</div>`;
+      btn.disabled = false;
+      btn.textContent = "إرسال الطلب";
+    }
+  });
 }
 
 async function trackByCurrentAccount() {
@@ -1691,6 +1802,7 @@ async function init() {
     handleRoute();
     setupScrollReveal();
     setupHeaderScrollShadow();
+    setInterval(updateAllCountdowns, 30000);
   } finally {
     hidePageLoader();
   }
