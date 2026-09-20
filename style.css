@@ -387,6 +387,12 @@ header.site-header.is-scrolled{box-shadow:0 10px 26px rgba(0,0,0,.22);}
   font-size:11.5px; font-weight:700; padding:6px 14px 6px 10px;
   clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 10% 50%);
 }
+.badge-label.badge-flash{background:linear-gradient(135deg, #FF8A5B, #E5695B);}
+.badge-label.badge-restocked{background:linear-gradient(135deg, var(--forest-2), var(--forest)); color:#052018;}
+.flash-countdown{
+  display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700;
+  color:var(--danger); margin-top:2px;
+}
 .badge-oos{
   position:absolute; inset:0; background:rgba(6,13,10,.72); color:#fff;
   display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14.5px;
