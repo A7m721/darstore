@@ -363,5 +363,26 @@
 <div class="toast" id="toast"></div>
 
 <script type="module" src="customer.js"></script>
+   <script>
+document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // 2. حظر اختصارات لوحة المفاتيح الشهيرة لعرض الكود
+        document.addEventListener('keydown', function(e) {
+            // منع Ctrl + U (عرض مصدر الصفحة View Page Source)
+            if (e.ctrlKey && e.key.toLowerCase() === 'u') {
+                e.preventDefault();
+            }
+            // منع F12 (أدوات المطورين Inspect)
+            if (e.key === 'F12') {
+                e.preventDefault();
+            }
+            // منع Ctrl + Shift + I (أدوات المطورين)
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i') {
+                e.preventDefault();
+            }
+        });
+    </script>
 </body>
 </html>
