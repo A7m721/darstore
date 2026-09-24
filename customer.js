@@ -392,8 +392,8 @@ function setupPWA(s) {
   const manifest = {
     name,
     short_name: name,
-    start_url: location.pathname,
-    scope: location.pathname,
+    start_url: location.origin + location.pathname,
+    scope: location.origin + location.pathname,
     display: "standalone",
     orientation: "portrait",
     dir: "rtl",
